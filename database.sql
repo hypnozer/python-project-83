@@ -4,3 +4,15 @@ CREATE TABLE IF NOT EXISTS urls (
     created_at DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
+CREATE TABLE IF NOT EXISTS url_checks (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    url_id BIGINT NOT NULL REFERENCES urls(id) ON DELETE CASCADE,
+    status_code INTEGER,
+    h1 TEXT,
+    title TEXT,
+    description TEXT,
+    created_at DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+CREATE INDEX IF NOT EXISTS url_checks_url_id_idx
+    ON url_checks (url_id);

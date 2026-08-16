@@ -1,6 +1,7 @@
 import os
 from datetime import date
 
+import psycopg
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -31,9 +32,21 @@ def urls_index():
     with connect() as connection:
         urls = connection.execute(
             """
-            SELECT id, name, created_at
+            SELECT
+                urls.id,
+                urls.name,
+                urls.created_at,
+                latest_check.created_at AS last_check,
+                latest_check.status_code
             FROM urls
-            ORDER BY id DESC
+            LEFT JOIN LATERAL (
+                SELECT created_at, status_code
+                FROM url_checks
+                WHERE url_id = urls.id
+                ORDER BY id DESC
+                LIMIT 1
+            ) AS latest_check ON TRUE
+            ORDER BY urls.id DESC
             """
         ).fetchall()
 
@@ -86,10 +99,45 @@ def url_show(url_id):
             (url_id,),
         ).fetchone()
 
-    if url is None:
-        abort(404)
+        if url is None:
+            abort(404)
 
-    return render_template("urls/show.html", url=url)
+        checks = connection.execute(
+            """
+            SELECT id, status_code, h1, title, description, created_at
+            FROM url_checks
+            WHERE url_id = %s
+            ORDER BY id DESC
+            """,
+            (url_id,),
+        ).fetchall()
+
+    return render_template("urls/show.html", url=url, checks=checks)
+
+
+@app.post("/urls/<int:url_id>/checks")
+def checks_create(url_id):
+    try:
+        with connect() as connection:
+            check = connection.execute(
+                """
+                INSERT INTO url_checks (url_id, created_at)
+                SELECT id, %s
+                FROM urls
+                WHERE id = %s
+                RETURNING id
+                """,
+                (date.today(), url_id),
+            ).fetchone()
+
+            if check is None:
+                abort(404)
+    except psycopg.Error:
+        flash("Произошла ошибка при проверке", "danger")
+    else:
+        flash("Страница успешно проверена", "success")
+
+    return redirect(url_for("url_show", url_id=url_id))
 
 
 def main():
