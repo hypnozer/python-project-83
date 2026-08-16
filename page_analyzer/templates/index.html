@@ -1,15 +1,30 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Анализатор страниц</title>
-  </head>
-  <body>
-    <main>
-      <h1>Анализатор страниц</h1>
-      <p>Бесплатно проверяйте сайты на SEO-пригодность.</p>
-    </main>
-  </body>
-</html>
+{% extends "base.html" %}
 
+{% block content %}
+  <section class="container-lg mt-3">
+    <div class="row">
+      <div class="col-12 col-md-10 col-lg-8 mx-auto border rounded-3 bg-light p-5">
+        <h1 class="display-3">Анализатор страниц</h1>
+        <p class="lead">Бесплатно проверяйте сайты на SEO-пригодность</p>
+        <form action="/urls" method="post" class="row g-3">
+          <div class="col-12 col-md">
+            <label for="url" class="visually-hidden">Адрес сайта</label>
+            <input
+              type="text"
+              id="url"
+              name="url"
+              class="form-control form-control-lg"
+              placeholder="https://www.example.com"
+              required
+            >
+          </div>
+          <div class="col-12 col-md-auto">
+            <button type="submit" class="btn btn-primary btn-lg px-5 w-100 text-uppercase">
+              Проверить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}

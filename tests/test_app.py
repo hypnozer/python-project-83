@@ -14,3 +14,9 @@ def test_index():
 
     assert response.status_code == 200
     assert "Анализатор страниц" in response.text
+    assert "bootstrap@5.3.8" in response.text
+    assert 'action="/urls"' in response.text
+    assert 'method="post"' in response.text
+    assert 'name="url"' in response.text
+    assert 'placeholder="https://www.example.com"' in response.text
+    assert "Проверить" in response.text
