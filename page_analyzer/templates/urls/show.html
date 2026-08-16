@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% macro truncate_check_value(value, max_length=200) -%}
+  {%- if value and value | length > max_length -%}
+    {{- value[:max_length] }}...
+  {%- else -%}
+    {{- value | default('', true) -}}
+  {%- endif -%}
+{%- endmacro %}
+
 {% block title %}{{ url.name }} | Анализатор страниц{% endblock %}
 
 {% block content %}
@@ -54,9 +62,9 @@
             <tr>
               <td>{{ check.id }}</td>
               <td>{{ check.status_code | default('', true) }}</td>
-              <td>{{ check.h1 | default('', true) | truncate(200, true, '...', 0) }}</td>
-              <td>{{ check.title | default('', true) | truncate(200, true, '...', 0) }}</td>
-              <td>{{ check.description | default('', true) | truncate(200, true, '...', 0) }}</td>
+              <td>{{ truncate_check_value(check.h1) }}</td>
+              <td>{{ truncate_check_value(check.title) }}</td>
+              <td>{{ truncate_check_value(check.description) }}</td>
               <td>{{ check.created_at }}</td>
             </tr>
           {% endfor %}

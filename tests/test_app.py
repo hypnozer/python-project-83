@@ -78,7 +78,7 @@ def test_url_templates_have_test_attributes():
     assert 'action="/urls/1/checks"' in url_page
     assert 'value="Запустить проверку"' in url_page
     assert "2026-08-17" in url_page
-    assert "h" * 197 + "..." in url_page
+    assert "h" * 200 + "..." in url_page
     assert "h" * 201 not in url_page
 
 
