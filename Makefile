@@ -1,3 +1,5 @@
+PORT ?= 8000
+
 install:
 	uv sync
 
@@ -6,10 +8,16 @@ update:
 	uv sync
 
 dev:
-	uv run flask --app page_analyzer.app run --debug
+	uv run flask --debug --app page_analyzer:app run
 
 start:
-	uv run gunicorn -w 5 -b 0.0.0.0:8000 page_analyzer.app:app
+	uv run gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
+
+build:
+	./build.sh
+
+render-start:
+	gunicorn -w 5 -b 0.0.0.0:$(PORT) page_analyzer:app
 
 test:
 	uv run pytest
@@ -22,8 +30,4 @@ lint:
 
 check: test lint
 
-build:
-	uv build
-
-.PHONY: install update dev start test test-coverage lint check build
-
+.PHONY: install update dev start build render-start test test-coverage lint check
