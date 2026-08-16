@@ -1,0 +1,1 @@
+"""Page Analyzer application package."""

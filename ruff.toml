@@ -1,0 +1,10 @@
+line-length = 80
+
+[lint.per-file-ignores]
+# Init modules may contain imports that expose the package API.
+"__init__.py" = ["F401"]
+
+[lint]
+preview = true
+select = ["E", "F", "I", "C90"]
+
