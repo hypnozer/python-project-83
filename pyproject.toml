@@ -9,6 +9,7 @@ dependencies = [
     "gunicorn>=23,<24",
     "psycopg[binary]>=3.2,<4.0",
     "python-dotenv>=1.0,<2.0",
+    "requests>=2.32,<3.0",
     "validators>=0.34,<1.0",
 ]
 

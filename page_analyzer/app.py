@@ -2,6 +2,7 @@ import os
 from datetime import date
 
 import psycopg
+import requests
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -119,23 +120,42 @@ def url_show(url_id):
 def checks_create(url_id):
     try:
         with connect() as connection:
-            check = connection.execute(
+            url = connection.execute(
                 """
-                INSERT INTO url_checks (url_id, created_at)
-                SELECT id, %s
+                SELECT id, name
                 FROM urls
                 WHERE id = %s
-                RETURNING id
                 """,
-                (date.today(), url_id),
+                (url_id,),
             ).fetchone()
-
-            if check is None:
-                abort(404)
     except psycopg.Error:
         flash("Произошла ошибка при проверке", "danger")
-    else:
-        flash("Страница успешно проверена", "success")
+        return redirect(url_for("url_show", url_id=url_id))
+
+    if url is None:
+        abort(404)
+
+    try:
+        response = requests.get(url["name"], timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
+        flash("Произошла ошибка при проверке", "danger")
+        return redirect(url_for("url_show", url_id=url_id))
+
+    try:
+        with connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO url_checks (url_id, status_code, created_at)
+                VALUES (%s, %s, %s)
+                """,
+                (url_id, response.status_code, date.today()),
+            )
+    except psycopg.Error:
+        flash("Произошла ошибка при проверке", "danger")
+        return redirect(url_for("url_show", url_id=url_id))
+
+    flash("Страница успешно проверена", "success")
 
     return redirect(url_for("url_show", url_id=url_id))
 
