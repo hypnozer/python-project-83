@@ -6,6 +6,7 @@ import requests
 from flask import Flask, render_template
 
 from page_analyzer import app
+from page_analyzer.seo import extract_seo_data
 from page_analyzer.url_utils import is_valid_url, normalize_url
 
 
@@ -59,9 +60,9 @@ def test_url_templates_have_test_attributes():
     check = {
         "id": 2,
         "status_code": None,
-        "h1": None,
-        "title": None,
-        "description": None,
+        "h1": "h" * 201,
+        "title": "Example title",
+        "description": "Example description",
         "created_at": date(2026, 8, 17),
     }
 
@@ -77,6 +78,31 @@ def test_url_templates_have_test_attributes():
     assert 'action="/urls/1/checks"' in url_page
     assert 'value="Запустить проверку"' in url_page
     assert "2026-08-17" in url_page
+    assert "h" * 197 + "..." in url_page
+    assert "h" * 201 not in url_page
+
+
+def test_extract_seo_data():
+    html = """
+        <html>
+          <head>
+            <title> Example title </title>
+            <meta content="Example description" name="description">
+          </head>
+          <body><h1>Example <span>heading</span></h1></body>
+        </html>
+    """
+
+    assert extract_seo_data(html) == {
+        "h1": "Example heading",
+        "title": "Example title",
+        "description": "Example description",
+    }
+    assert extract_seo_data("<html></html>") == {
+        "h1": "",
+        "title": "",
+        "description": "",
+    }
 
 
 def test_create_check(monkeypatch):
@@ -90,7 +116,14 @@ def test_create_check(monkeypatch):
     connection_context = MagicMock()
     connection_context.__enter__.return_value = connection
     monkeypatch.setattr(app_module, "connect", lambda: connection_context)
-    response_from_site = MagicMock(status_code=200)
+    response_from_site = MagicMock(
+        status_code=200,
+        text="""
+            <title>Example title</title>
+            <meta name="description" content="Example description">
+            <h1>Example heading</h1>
+        """,
+    )
     get = MagicMock(return_value=response_from_site)
     monkeypatch.setattr(app_module.requests, "get", get)
 
@@ -103,6 +136,11 @@ def test_create_check(monkeypatch):
     response_from_site.raise_for_status.assert_called_once_with()
     insert_params = connection.execute.call_args_list[1].args[1]
     assert insert_params[:2] == (1, 200)
+    assert insert_params[2:5] == (
+        "Example heading",
+        "Example title",
+        "Example description",
+    )
     with client.session_transaction() as session:
         assert (
             "success",

@@ -54,9 +54,9 @@
             <tr>
               <td>{{ check.id }}</td>
               <td>{{ check.status_code | default('', true) }}</td>
-              <td>{{ check.h1 | default('', true) }}</td>
-              <td>{{ check.title | default('', true) }}</td>
-              <td>{{ check.description | default('', true) }}</td>
+              <td>{{ check.h1 | default('', true) | truncate(200, true, '...', 0) }}</td>
+              <td>{{ check.title | default('', true) | truncate(200, true, '...', 0) }}</td>
+              <td>{{ check.description | default('', true) | truncate(200, true, '...', 0) }}</td>
               <td>{{ check.created_at }}</td>
             </tr>
           {% endfor %}

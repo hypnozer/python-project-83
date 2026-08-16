@@ -15,6 +15,7 @@ from flask import (
 )
 
 from page_analyzer.database import connect
+from page_analyzer.seo import extract_seo_data
 from page_analyzer.url_utils import is_valid_url, normalize_url
 
 load_dotenv()
@@ -142,14 +143,30 @@ def checks_create(url_id):
         flash("Произошла ошибка при проверке", "danger")
         return redirect(url_for("url_show", url_id=url_id))
 
+    seo_data = extract_seo_data(response.text)
+
     try:
         with connect() as connection:
             connection.execute(
                 """
-                INSERT INTO url_checks (url_id, status_code, created_at)
-                VALUES (%s, %s, %s)
+                INSERT INTO url_checks (
+                    url_id,
+                    status_code,
+                    h1,
+                    title,
+                    description,
+                    created_at
+                )
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """,
-                (url_id, response.status_code, date.today()),
+                (
+                    url_id,
+                    response.status_code,
+                    seo_data["h1"],
+                    seo_data["title"],
+                    seo_data["description"],
+                    date.today(),
+                ),
             )
     except psycopg.Error:
         flash("Произошла ошибка при проверке", "danger")
