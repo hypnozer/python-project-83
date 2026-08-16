@@ -19,11 +19,17 @@
             Анализатор страниц
           </a>
           <div class="navbar-nav">
-            <a class="nav-link" href="/urls">Сайты</a>
+            <a class="nav-link" href="{{ url_for('urls_index') }}">Сайты</a>
           </div>
         </div>
       </nav>
     </header>
+
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="alert alert-{{ category }} mb-0" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
 
     <main class="flex-grow-1">
       {% block content %}{% endblock %}
@@ -38,4 +44,3 @@
     </footer>
   </body>
 </html>
-

@@ -6,7 +6,7 @@
       <div class="col-12 col-md-10 col-lg-8 mx-auto border rounded-3 bg-light p-5">
         <h1 class="display-3">Анализатор страниц</h1>
         <p class="lead">Бесплатно проверяйте сайты на SEO-пригодность</p>
-        <form action="/urls" method="post" class="row g-3">
+        <form action="{{ url_for('urls_create') }}" method="post" class="row g-3">
           <div class="col-12 col-md">
             <label for="url" class="visually-hidden">Адрес сайта</label>
             <input
@@ -15,6 +15,7 @@
               name="url"
               class="form-control form-control-lg"
               placeholder="https://www.example.com"
+              value="{{ url | default('') }}"
               required
             >
           </div>
